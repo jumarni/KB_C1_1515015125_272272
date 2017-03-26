@@ -1,0 +1,137 @@
+Nama	: Jumarni
+NIM	: 1515015125
+Kelas   : C1/C2015
+DOMAINS   
+nama,jender,pekerjaan,benda,alasan,zat = symbol   
+umur=integer
+  
+PREDICATES  
+nondeterm orang(nama, umur, jender, pekerjaan)   
+nondeterm selingkuh(nama, nama)  
+terbunuh_dengan(nama, benda)  
+terbunuh(nama)   
+nondeterm pembunuh(nama)  
+motif(alasan)   
+ternodai(nama, zat)   
+milik(nama, benda)   
+nondeterm cara_kerja_mirip(benda, benda)  
+nondeterm kemungkinan_milik(nama, benda)   
+nondeterm dicurigai(nama)
+
+CLAUSES
+orang(budi,55,m,tukang_kayu).   
+orang(aldi,25,m,pemain_sepak_bola).  
+orang(aldi,25,m,tukang_jagal).   
+orang(joni,25,m,pencopet).  
+
+selingkuh(ina,joni).  
+selingkuh(ina,budi).   
+selingkuh(siti,joni).  
+ 
+terbunuh_dengan(siti,pentungan).   
+terbunuh(siti).  
+  
+motif(uang).   
+motif(cemburu).   
+motif(dendam).  
+  
+ternodai(budi, darah).   
+ternodai(siti, darah).   
+ternodai(aldi, lumpur).   
+ternodai(joni, coklat).   
+ternodai(ina, coklat).  
+  
+milik(budi,kaki_palsu).   
+milik(joni,pistol).
+/* * * Basis Pengetahuan * * */
+
+cara_kerja_mirip(kaki_palsu, pentungan).   
+cara_kerja_mirip(balok, pentungan).   
+cara_kerja_mirip(gunting, pisau).   
+cara_kerja_mirip(sepatu_bola, pentungan).  
+  
+kemungkinan_milik(X,sepatu_bola):-  
+orang(X,_,_,pemain_sepak_bola).  
+kemungkinan_milik(X,gunting):-  
+orang(X,_,_,pekerja_salon).  
+kemungkinan_milik(X,Benda):-  
+milik(X,Benda).  
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * *  
+* dicurigai semua orang yang memiliki senjata yang      *  
+* kerjanya mirip dengan senjata penyebab siti terbunuh. *  
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * */  
+
+dicurigai(X):-  
+terbunuh_dengan(siti,Senjata) ,
+cara_kerja_mirip(Benda,Senjata) ,  
+kemungkinan_milik(X,Benda).  
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *  
+* dicurigai laki-laki yang selingkuh dengan siti. * 
+* * * * * * * * * * * * * * * * * * * * * * * * * */
+  
+dicurigai(X):-  
+motif(cemburu),  
+orang(X,_,m,_),  
+selingkuh(siti,X).
+  
+/* * * * * * * * * * * * * * * * * * * * * * *  
+* dicurigai perempuan yang selingkuh dengan *  
+* laki-laki yang juga selingkuh dengan siti *  
+* * * * * * * * * * * * * * * * * * * * * * */  
+
+dicurigai(X):-  
+motif(cemburu),  
+orang(X,_,f,_), 
+ selingkuh(X,Lakilaki), 
+selingkuh(siti,Lakilaki).
+  
+/* * * * * * * * * * * * * * * * * * * * * * * * * * *  
+* dicurigai pencopet yang mempunyai motif uang.     *  
+* * * * * * * * * * * * * * * * * * * * * * * * * * */  
+
+dicurigai(X):-  
+motif(uang),  
+orang(X,_,_,pencopet).  
+
+pembunuh(Pembunuh):-  
+orang(Pembunuh,_,_,_),  
+terbunuh(Terbunuh),  
+Terbunuh <> Pembunuh, /* Bukan bunuh diri */  
+dicurigai(Pembunuh),  
+ternodai(Pembunuh,Zat),  
+ternodai(Terbunuh,Zat).
+  
+GOAL   
+pembunuh(X).
+
+ANALISIS
+Pada Goal pembunuh(X), akan dicari pembunuh dengan variabel X. Program akan mencari dengan CLAUSA pembunuh(Pembunuh). Variabel X pada Goal akan di unifikasi ke dalam variabel Pembunuh. Kemudian, akan mencari pembunuh dengan mengecek setiap aturan dan fakta.
+
+pembunuh(Pembunuh). 
+1.	Aturan pertama. Dikatakan Pembunuh jika Pembunuh adalah orang. Program akan mengecek siapa saja orang yang terdapat dalam fakta, kemudian ditemukan yang termasuk dalam orang adalah budi 55thn laki-laki tukang kayu, aldi 25thn laki-laki pemain bola, aldi 25thn laki-laki tukang jagal dan joni 25thn laki-laki pencopet. Karena budi adalah fakta pertama, jadi budi diunifikasi kedalam Pembunuh. Aturan ini telah terpenuhi. Kemudian program akan mengecek aturan kedua.
+2.	Aturan kedua. Dikatakan Pembunuh jika Pembunuh adalah orang dan yang Terbunuh bukan Pembunuh (bunuh diri). Kemudian ditemukan fakta bahwa yang terbunuh adalah siti. Aturan ini telah terpenuhi. Kemudian program akan mengecek aturan ketiga.
+3.	Aturan ketiga. Dikatakan Pembunuh jika Pembunuh adalah orang yang berbeda dengan Terbunuh. Pada fakta sebelumnya, orang yang memungkinkan untuk menjadi Pembunuh adalah budi, aldi dan Joni sedangkan Terbunuh adalah siti dimana siti adalah selingkuhan joni sedangkan joni adalah selingkuhan ina dan ina selingkuhan budi. Aturan ini telah terpenuhi. Kemudian program akan mengecek aturan keempat.
+4.	Aturan keempat. Dikatakan Pembunuh jika Pembunuh dicurigai. Kemudian program akan menjalankan aturan dicurigai(X). 
+5.	Dicurigai(X) pertama. 
+
+a.	Aturan pertama. X dicurigai jika siti terbunuh dengan Senjata. Dengan aturan ini, X diunifikasi kedalam variabel siti. Dimana dalam fakta siti terbunuh dengan pentungan. Senjata telah ditemukan. Aturan telah terpenuhi. Program akan melanjutkan ke aturan selanjutnya.
+b.	Aturan kedua. X dicurigai jika cara kerja benda mirip dengan Senjata. Pada fakta dan aturan sebelumnya ditemukan Senjata adalah pentungan. Program akan mengecek Benda yang cara kerjanya mirip dengan pentungan. Dalam fakta Benda yang cara kerjanya mirip dengan pentungan adalah kaki palsu, karena kaki palsu adalah fakta pertama maka kaki palsu diunifikasi ke dalam variabel Benda. Aturan telah terpenuhi. Program akan melanjutkan ke aturan selanjutnya.
+c.	Aturan ketiga. X dicurigai jika X kemungkinan memiliki Benda. Dalam fakta dan aturan sebelumnya Benda adalah kaki palsu. Program akan mengecek dalam fakta orang yang kemungkinan memiliki kaki palsu. Dimana dalam fakta, X kemungkinan memiliki Benda jika X memiliki Benda tersebut. Dalam fakta sebelumnya Benda adalah kaki palsu kemudian dalam fakta budi memiliki kaki palsu. Maka dapat disimpulkan bahwa budi kemungkinan memiliki kaki palsu. Kemudian budi diunifikasi kedalam variabel X dan kaki palsu diunifikasi kedalam variabel Benda. Aturan telah terpenuhi. Program akan melanjutkan ke aturan selanjutnya.
+d.	Karena dalam predicates dicurigai lebih dari satu maka program melanjutkan pembuktian bahwa budi adalah X atau menemukan X dicurigai lainnya.
+e.	Dicurigai(X) kedua. Aturan pertama. Membuktikan budi adalah X serta mencari yang dicurigai lainnya dengan aturan X dicurigai jika motif adalah cemburu. Program akan mengecek fakta, dan motif cemburu ada dalam fakta. Aturan terpenuhi. Program akan melanjutkan ke aturan selanjutnya.
+f.	Aturan kedua. Dalam aturan ini budi dicurigai jika budi adalah orang yang berjenis kelamin laki-laki. Dalam fakta dan aturan sebelumya, budi berjenis kelamin laki-laki. Aturan terpenuhi. Program akan melanjutkan ke aturan selanjutnya.
+g.	Aturan ketiga. Dalam aturan ini budi dicurigai jika siti selingkuh dengan budi. Dalam fakta, budi tidak berselingkuh dengan siti. Aturan ini tidak terpenuhi, maka dilakukan lacakbalik. Program akan kembali ke aturan sebelumnya dimana mencari orang yang berjenis kelamin laki-laki selain budi. Dalam fakta orang yang berjenis kelamin laki-laki setelah budi adalah aldi. Program akan mengecek kembali apakah siti selingkuh dengan aldi. Ternyata tidak, dilakukan kembali lacakbalik mencari orang yang berjenis kelamin laki-laki selain budi dan aldi. Dalam fakta orang yang berjenis kelamin laki-laki selain budi dan aldi adalah joni. Kemudian joni diunifikasi kedalam variabel X lalu program akan menjalankan aturan selanjutnya, mengecek apakah siti selingkuh dengan joni. Dalam aturan benar bahwa siti selingkuh dengan joni. Dengan ini maka joni diunifikasi kedalam variabel X dicurigai. Maka orang yang dicurigai adalah budi(aturan dicurigai sebelumya) dan joni. Aturan telah terpenuhi. Program akan melanjutkan ke aturan selanjutnya. 
+h.	Setelah mendapatkan orang yang dicurigai adalah budi dan joni melalui aturan yang berbeda. Program mencari orang yang dicurigai lainnya.
+i.	Dicurigai(X) ketiga. Aturan ketujuh. Dalam aturan ini X dicurigai jika motif adalah cemburu. Program akan mengecek apakah terdapat fakta. Dalam fakta benar adanya motif karena cemburu. Aturan terpenuhi. Program akan melanjutkan ke aturan selanjutnya.
+j.	Aturan pertama. Dalam aturan ini, X dicurigai jika X adalah orang yang berjenis kelamin perempuan. Program akan mencari orang yang berjenis kelamin perempuan. Karena dalam fakta tidak terdapat orang yang berjenis kelamin perempuan, maka aturan ini tidak terpenuhi. Dan karena dalam aturan ini menggunakan “dan” maka aturan selanjutnya tidak bisa dijalankan. Program melanjutkan ke pencarian orang yang dicurigai selanjutnya.
+k.	Dicurigai(X) keempat. Aturan pertama. Dalam aturan ini X dicurigai jika motif adalah uang. Program akan mengecek apakah terdapat motif karena uang. Dalam fakta terdapat motif karena uang. Aturan telah terpenuhi. Program akan melanjutkan ke aturan selanjutnya. 
+l.	Aturan kedua. X dicurigai jika X adalah seorang pencopet. Program akan mengecek terdapat orang yang berprofesi pencopet. Dalam fakta orang yang berprofesi sebagai pencopet adalah joni. maka joni diunifikasi kedalam variabel X. Aturan terpenuhi. 
+m.	Sampai saat ini orang yang dicurigai adalah budi dan joni. Program akan melanjutkan ke pencarian pembunuh dengan dicurigai adalah budi dan joni.
+
+6.	Aturan kelima. Dikatakan Pembunuh jika Pembunuh ternodai Zat. Karena Pembunuh adalah budi dan joni, maka program akan mencari Zat yang menodai budi dan joni. Dalam fakta budi ternodai oleh darah, dan joni ternodai coklat maka darah dan coklat di unifikasi ke dalam variabel Zat. Aturan terpenuhi. Program akan melanjutkan ke aturan selanjutnya.
+7.	Aturan keenam. Dalam aturan ini Pembunuh dikatakan pembunuh jika Terbunuh ternodai Zat. Dalam aturan dan fakta sebelumnya ditemukan bahwa Terbunuh adalah siti dan Zat adalah darah dan coklat. Maka program akan mengecek apakah benar siti ternodai darah atau coklat. Berdasarkan fakta adalah benar siti ternodai darah bukan coklat. Aturan terpenuhi. 
+8.	Maka dapat disimpulkan bahwa Pembunuh adalah budi. 
+
+
